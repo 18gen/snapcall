@@ -182,37 +182,39 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-black">
-      {/* Header */}
-      <div className="border-b border-zinc-800 bg-black px-6 py-4">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+    <div className="flex h-screen flex-col bg-white dark:bg-black">
+      {/* Simple Header */}
+      <div className="border-b border-gray-200 dark:border-zinc-800 px-6 py-3 sticky top-0 z-40 bg-white dark:bg-black">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
             snapcall
           </h1>
-          <div className="flex gap-3">
+          <div className="flex gap-2 items-center">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={handleClearChat}
-              className="bg-zinc-900 border-zinc-700 hover:bg-zinc-800 text-zinc-50 text-xs"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-900 text-sm"
+              title="Clear conversation"
             >
-              Clear chat
+              Clear
             </Button>
             <Button
               size="sm"
               onClick={() => setShowDashboard(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+              className="bg-gray-100 hover:bg-gray-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-gray-900 dark:text-white text-sm transition-colors"
+              title="View analytics"
             >
-              Dashboard
+              Analytics
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Chat area */}
+      {/* Chat Area */}
       <ChatList messages={messages} onFeedback={handleFeedback} />
 
-      {/* Input area */}
+      {/* Input Area */}
       <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
 
       {/* Dashboard Modal */}

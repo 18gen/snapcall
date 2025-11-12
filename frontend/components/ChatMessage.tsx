@@ -20,8 +20,8 @@ export function ChatMessage({ message, onFeedback }: ChatMessageProps) {
       }`}
     >
       {!isUser && (
-        <Avatar className="w-8 h-8 flex-shrink-0 mt-1">
-          <AvatarFallback className="text-xs">A</AvatarFallback>
+        <Avatar className="w-10 h-10 flex-shrink-0 mt-1">
+          <AvatarFallback className="text-base">SC</AvatarFallback>
         </Avatar>
       )}
 
@@ -46,10 +46,10 @@ export function ChatMessage({ message, onFeedback }: ChatMessageProps) {
                       {MCP_DATABASE[source as keyof typeof MCP_DATABASE]?.name || source}
                     </span>
                     {!message.isStreaming && (
-                      <div className="flex gap-1.5">
+                      <div className="flex gap-2">
                         <button
                           onClick={() => onFeedback?.(message.id, source, 'thumbs-up')}
-                          className={`inline-flex items-center justify-center w-5 h-5 rounded transition-all ${
+                          className={`inline-flex items-center justify-center w-6 h-6 rounded transition-all ${
                             message.mcpFeedback?.[source] === 'thumbs-up'
                               ? 'bg-emerald-500/20 text-emerald-400'
                               : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
@@ -57,17 +57,19 @@ export function ChatMessage({ message, onFeedback }: ChatMessageProps) {
                           title="Helpful"
                         >
                           <svg
-                            className="w-3 h-3"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg"
                           >
-                            <path d="M2 10.5a1.5 1.5 0 113 0v-7a1.5 1.5 0 00-3 0v7zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.256 8H6z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
                         <button
                           onClick={() => onFeedback?.(message.id, source, 'thumbs-down')}
-                          className={`inline-flex items-center justify-center w-5 h-5 rounded transition-all ${
+                          className={`inline-flex items-center justify-center w-6 h-6 rounded transition-all ${
                             message.mcpFeedback?.[source] === 'thumbs-down'
                               ? 'bg-rose-500/20 text-rose-400'
                               : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
@@ -75,12 +77,14 @@ export function ChatMessage({ message, onFeedback }: ChatMessageProps) {
                           title="Not helpful"
                         >
                           <svg
-                            className="w-3 h-3"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg"
                           >
-                            <path d="M18 9.5a1.5 1.5 0 11-3 0v-7a1.5 1.5 0 013 0v7zM14 9.667v-5.43a2 2 0 00-1.106-1.79l-.05-.025A4 4 0 0011.057 2H5.641a2 2 0 00-1.962 1.608l-1.2 6A2 2 0 004.44 12H8v4a2 2 0 002 2 1 1 0 001-1v-.667a4 4 0 01.8-2.4l1.744-2.266h.058z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
                       </div>

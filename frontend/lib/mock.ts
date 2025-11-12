@@ -1,4 +1,5 @@
-// Mock data and helper functions for chat demo
+// OpenAI integration for chat demo
+import OpenAI from 'openai';
 
 export interface Message {
   id: string;
@@ -73,12 +74,20 @@ export interface MockResponse {
   mcpSources: string[];
 }
 
-export async function getMockResponse(userMessage: string): Promise<MockResponse> {
-  // Random selection based on message content
+// Initialize OpenAI client
+const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+const openai = apiKey
+  ? new OpenAI({
+      apiKey,
+      dangerouslyAllowBrowser: true, // Required for frontend usage
+    })
+  : null;
+
+// Fallback function for when API key is not available
+function getFallbackResponse(userMessage: string): MockResponse {
   const messageContent = userMessage.toLowerCase();
   let response = mockResponses[Math.floor(Math.random() * mockResponses.length)];
 
-  // Simple routing based on keywords for variety
   const keywords = [
     { word: 'how', index: 0 },
     { word: 'what', index: 1 },
@@ -95,15 +104,49 @@ export async function getMockResponse(userMessage: string): Promise<MockResponse
     }
   }
 
-  // Simulate network delay (500-1500ms)
-  await new Promise((resolve) =>
-    setTimeout(resolve, Math.random() * 1000 + 500)
-  );
-
   return {
     content: response.content,
     mcpSources: response.mcpSources,
   };
+}
+
+export async function getMockResponse(userMessage: string): Promise<MockResponse> {
+  // If no API key, use fallback mock response
+  if (!openai) {
+    console.warn('OpenAI API key not found, using fallback mock response');
+    return getFallbackResponse(userMessage);
+  }
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: userMessage,
+        },
+      ],
+      max_tokens: 1000,
+      temperature: 0.7,
+    });
+
+    const content = completion.choices[0]?.message?.content || 'No response received';
+
+    // Randomly assign MCP sources for demonstration
+    const sources = Object.keys(MCP_DATABASE);
+    const randomSources = sources
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.floor(Math.random() * 3) + 1);
+
+    return {
+      content,
+      mcpSources: randomSources,
+    };
+  } catch (error) {
+    console.error('Error calling OpenAI API:', error);
+    // Fallback to mock response on error
+    return getFallbackResponse(userMessage);
+  }
 }
 
 export function generateId(): string {
