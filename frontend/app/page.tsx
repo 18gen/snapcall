@@ -5,8 +5,7 @@ import { ChatList } from '@/components/ChatList';
 import { ChatInput } from '@/components/ChatInput';
 import { DashboardModal } from '@/components/DashboardModal';
 import { Button } from '@/components/ui/button';
-import { Message, generateId } from '@/lib/mock';
-import { sendChatMessageStreaming, MCPSource } from '@/lib/api';
+import { Message, generateId, getMockResponse } from '@/lib/mock';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -52,7 +51,7 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
 
-    // Create assistant message
+    // Simulate streaming response
     const assistantMsg: Message = {
       id: generateId(),
       content: '',
@@ -64,75 +63,46 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, assistantMsg]);
 
     try {
-      // Use the real streaming API
-      await sendChatMessageStreaming(userMessage, (event) => {
-        switch (event.type) {
-          case 'start':
-            // Stream started
-            break;
+      // Get response from OpenAI (via getMockResponse)
+      const response = await getMockResponse(userMessage);
 
-          case 'status':
-            // Status update (optional: could show this in UI)
-            console.log('Status:', event.message);
-            break;
+      // Update assistant message with MCP sources
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMsg.id
+            ? { ...msg, mcpSources: response.mcpSources }
+            : msg
+        )
+      );
 
-          case 'mcp_source':
-            // Update with MCP source info
-            if (event.source) {
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === assistantMsg.id
-                    ? {
-                        ...msg,
-                        mcpSources: [...(msg.mcpSources || []), event.source!.id],
-                      }
-                    : msg
-                )
-              );
-            }
-            break;
+      // Simulate character-by-character streaming
+      let currentText = '';
+      const chars = response.content.split('');
 
-          case 'content':
-            // Append content to the message
-            if (event.content) {
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === assistantMsg.id
-                    ? { ...msg, content: msg.content + event.content }
-                    : msg
-                )
-              );
-            }
-            break;
+      for (let i = 0; i < chars.length; i++) {
+        currentText += chars[i];
 
-          case 'done':
-            // Mark streaming as complete
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === assistantMsg.id
-                  ? { ...msg, isStreaming: false }
-                  : msg
-              )
-            );
-            break;
+        // Update message with current streaming text
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMsg.id
+              ? { ...msg, content: currentText }
+              : msg
+          )
+        );
 
-          case 'error':
-            // Handle error
-            console.error('Stream error:', event.error);
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === assistantMsg.id
-                  ? {
-                      ...msg,
-                      content: event.error || 'An error occurred. Please try again.',
-                      isStreaming: false,
-                    }
-                  : msg
-              )
-            );
-            break;
-        }
-      });
+        // Small delay for streaming effect
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      }
+
+      // Mark streaming as complete
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMsg.id
+            ? { ...msg, isStreaming: false }
+            : msg
+        )
+      );
     } catch (error) {
       console.error('Error getting response:', error);
       setMessages((prev) =>
