@@ -1,65 +1,162 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { ChatList } from '@/components/ChatList';
+import { ChatInput } from '@/components/ChatInput';
+import { DashboardModal } from '@/components/DashboardModal';
+import { Button } from '@/components/ui/button';
+import { Message, generateId, getMockResponse } from '@/lib/mock';
+
+export default function ChatPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+
+  // Load messages from localStorage on mount
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem('chat-messages');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setMessages(
+          parsed.map((m: any) => ({
+            ...m,
+            timestamp: new Date(m.timestamp),
+          }))
+        );
+      } catch (e) {
+        console.error('Failed to parse saved messages:', e);
+      }
+    }
+  }, []);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (mounted && messages.length > 0) {
+      localStorage.setItem('chat-messages', JSON.stringify(messages));
+    }
+  }, [messages, mounted]);
+
+  const handleSendMessage = async (userMessage: string) => {
+    // Add user message with optimistic update
+    const userMsg: Message = {
+      id: generateId(),
+      content: userMessage,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setIsLoading(true);
+
+    // Simulate streaming response
+    const assistantMsg: Message = {
+      id: generateId(),
+      content: '',
+      sender: 'assistant',
+      timestamp: new Date(),
+      isStreaming: true,
+    };
+
+    setMessages((prev) => [...prev, assistantMsg]);
+
+    try {
+      // Get mock response
+      const responseText = await getMockResponse(userMessage);
+
+      // Simulate character-by-character streaming
+      let currentText = '';
+      const chars = responseText.split('');
+
+      for (let i = 0; i < chars.length; i++) {
+        currentText += chars[i];
+
+        // Update message with current streaming text
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMsg.id
+              ? { ...msg, content: currentText }
+              : msg
+          )
+        );
+
+        // Small delay for streaming effect
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      }
+
+      // Mark streaming as complete
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMsg.id
+            ? { ...msg, isStreaming: false }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.error('Error getting response:', error);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMsg.id
+            ? {
+                ...msg,
+                content: 'An error occurred. Please try again.',
+                isStreaming: false,
+              }
+            : msg
+        )
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClearChat = () => {
+    setMessages([]);
+    localStorage.removeItem('chat-messages');
+  };
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex h-screen flex-col bg-black">
+      {/* Header */}
+      <div className="border-b border-zinc-800 bg-black px-6 py-4">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold text-white tracking-tight">
+            snapcall
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearChat}
+              className="bg-zinc-900 border-zinc-700 hover:bg-zinc-800 text-zinc-50 text-xs"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Clear chat
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setShowDashboard(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Dashboard
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+
+      {/* Chat area */}
+      <ChatList messages={messages} />
+
+      {/* Input area */}
+      <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
+
+      {/* Dashboard Modal */}
+      <DashboardModal isOpen={showDashboard} onClose={() => setShowDashboard(false)} />
     </div>
   );
 }
