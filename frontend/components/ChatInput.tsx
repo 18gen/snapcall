@@ -49,7 +49,7 @@ export function ChatInput({ onSend, isLoading = false }: ChatInputProps) {
   }, []);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 pt-8 pb-8 px-4 z-50">
+    <div className="fixed bottom-0 left-0 right-0 pt-8 pb-8 px-4 z-40 pointer-events-auto">
       <div className="bg-zinc-900 rounded-4xl mx-auto max-w-2xl">
         <div className="flex gap-2 items-center px-5 py-3">
           <textarea

@@ -84,12 +84,7 @@ export default function ChatPage() {
                   msg.id === assistantMsg.id
                     ? {
                         ...msg,
-                        mcpSources: [{
-                          id: event.source!.id,
-                          name: event.source!.name,
-                          reasoning: event.source!.reasoning,
-                          confidence: event.source!.confidence,
-                        }],
+                        mcpSources: [...(msg.mcpSources || []), event.source!.id],
                       }
                     : msg
                 )
