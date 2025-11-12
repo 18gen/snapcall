@@ -1,0 +1,34 @@
+{
+  "name": "mcp-router-server",
+  "version": "1.0.0",
+  "description": "MCP Router Server with FAISS-based RAG for intelligent MCP selection and routing",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "prepare-vectors": "tsx src/scripts/prepareVectors.ts"
+  },
+  "keywords": [
+    "mcp",
+    "rag",
+    "faiss",
+    "llm",
+    "router"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "dotenv": "^17.2.3",
+    "faiss-node": "^0.5.1",
+    "openai": "^4.73.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

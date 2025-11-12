@@ -1,0 +1,54 @@
+{
+  "openai": {
+    "apiKey": "${OPENAI_API_KEY}",
+    "embeddingModel": "text-embedding-3-small",
+    "chatModel": "gpt-4o-mini"
+  },
+  "faiss": {
+    "indexPath": "./data/faiss_index.bin",
+    "metadataPath": "./data/metadata.json",
+    "dimension": 1536
+  },
+  "mcpServers": [
+    {
+      "id": "server1",
+      "name": "Weather MCP Server",
+      "description": "Provides weather information, forecasts, and climate data for locations worldwide",
+      "command": "node",
+      "args": ["/path/to/weather-server/index.js"],
+      "capabilities": ["weather", "forecast", "temperature", "climate"]
+    },
+    {
+      "id": "server2",
+      "name": "Database MCP Server",
+      "description": "Handles database operations including queries, updates, and schema management",
+      "command": "node",
+      "args": ["/path/to/database-server/index.js"],
+      "capabilities": ["database", "sql", "query", "crud"]
+    },
+    {
+      "id": "server3",
+      "name": "File System MCP Server",
+      "description": "Manages file system operations like reading, writing, and organizing files",
+      "command": "node",
+      "args": ["/path/to/filesystem-server/index.js"],
+      "capabilities": ["filesystem", "files", "directories", "storage"]
+    },
+    {
+      "id": "server4",
+      "name": "API Integration MCP Server",
+      "description": "Integrates with external APIs for data retrieval and service orchestration",
+      "command": "node",
+      "args": ["/path/to/api-server/index.js"],
+      "capabilities": ["api", "integration", "rest", "http"]
+    },
+    {
+      "id": "server5",
+      "name": "Analytics MCP Server",
+      "description": "Provides data analytics, visualization, and statistical analysis capabilities",
+      "command": "node",
+      "args": ["/path/to/analytics-server/index.js"],
+      "capabilities": ["analytics", "statistics", "visualization", "data analysis"]
+    }
+  ]
+}
