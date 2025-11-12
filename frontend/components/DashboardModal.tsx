@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Message } from '@/lib/mock';
+import { getServers } from '@/lib/api';
 
 interface DashboardModalProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface DashboardModalProps {
 
 export function DashboardModal({ isOpen, onClose }: DashboardModalProps) {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [servers, setServers] = useState<any[]>([]);
+  const [loadingServers, setLoadingServers] = useState(false);
   const [stats, setStats] = useState({
     totalMessages: 0,
     userMessages: 0,
@@ -19,27 +22,40 @@ export function DashboardModal({ isOpen, onClose }: DashboardModalProps) {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('chat-messages');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const messagesData = parsed.map((m: any) => ({
-          ...m,
-          timestamp: new Date(m.timestamp),
-        }));
-        setMessages(messagesData);
+    if (isOpen) {
+      // Load messages
+      const saved = localStorage.getItem('chat-messages');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          const messagesData = parsed.map((m: any) => ({
+            ...m,
+            timestamp: new Date(m.timestamp),
+          }));
+          setMessages(messagesData);
 
-        const userMsgs = messagesData.filter((m: Message) => m.sender === 'user');
-        const assistantMsgs = messagesData.filter((m: Message) => m.sender === 'assistant');
+          const userMsgs = messagesData.filter((m: Message) => m.sender === 'user');
+          const assistantMsgs = messagesData.filter((m: Message) => m.sender === 'assistant');
 
-        setStats({
-          totalMessages: messagesData.length,
-          userMessages: userMsgs.length,
-          assistantMessages: assistantMsgs.length,
-        });
-      } catch (e) {
-        console.error('Failed to parse saved messages:', e);
+          setStats({
+            totalMessages: messagesData.length,
+            userMessages: userMsgs.length,
+            assistantMessages: assistantMsgs.length,
+          });
+        } catch (e) {
+          console.error('Failed to parse saved messages:', e);
+        }
       }
+
+      // Load servers
+      setLoadingServers(true);
+      getServers()
+        .then(setServers)
+        .catch((err) => {
+          console.error('Failed to load servers:', err);
+          setServers([]);
+        })
+        .finally(() => setLoadingServers(false));
     }
   }, [isOpen]);
 
@@ -78,6 +94,51 @@ export function DashboardModal({ isOpen, onClose }: DashboardModalProps) {
                 <div className="text-xs text-zinc-400 mb-1">AI</div>
                 <div className="text-2xl font-bold text-purple-100">{stats.assistantMessages}</div>
               </div>
+            </div>
+
+            {/* MCP Servers */}
+            <div className="space-y-2">
+              <h2 className="text-sm font-semibold text-zinc-50">MCP Servers</h2>
+              {loadingServers ? (
+                <div className="text-xs text-zinc-400">Loading servers...</div>
+              ) : servers.length > 0 ? (
+                <div className="space-y-2">
+                  {servers.map((server) => (
+                    <div
+                      key={server.id}
+                      className="bg-zinc-900 border border-zinc-800 p-3 rounded-lg"
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="text-sm font-semibold text-zinc-50">{server.name}</div>
+                        <div
+                          className={`text-xs px-2 py-0.5 rounded ${
+                            server.connected
+                              ? 'bg-green-900 text-green-100'
+                              : 'bg-zinc-800 text-zinc-400'
+                          }`}
+                        >
+                          {server.connected ? 'Connected' : 'Disconnected'}
+                        </div>
+                      </div>
+                      <div className="text-xs text-zinc-400 mb-2">{server.description}</div>
+                      {server.capabilities && server.capabilities.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {server.capabilities.map((cap: string) => (
+                            <span
+                              key={cap}
+                              className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300"
+                            >
+                              {cap}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-zinc-400">No servers available. Make sure the backend is running.</div>
+              )}
             </div>
 
             {/* Chat History */}
