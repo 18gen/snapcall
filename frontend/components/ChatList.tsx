@@ -7,9 +7,10 @@ import { Message } from '@/lib/mock';
 
 interface ChatListProps {
   messages: Message[];
+  onFeedback?: (messageId: string, mcpSource: string, feedback: 'thumbs-up' | 'thumbs-down') => void;
 }
 
-export function ChatList({ messages }: ChatListProps) {
+export function ChatList({ messages, onFeedback }: ChatListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll to bottom when messages change
@@ -41,7 +42,7 @@ export function ChatList({ messages }: ChatListProps) {
           </div>
         ) : (
           messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
+            <ChatMessage key={message.id} message={message} onFeedback={onFeedback} />
           ))
         )}
       </div>

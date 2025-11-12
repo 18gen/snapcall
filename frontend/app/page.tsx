@@ -64,11 +64,20 @@ export default function ChatPage() {
 
     try {
       // Get mock response
-      const responseText = await getMockResponse(userMessage);
+      const response = await getMockResponse(userMessage);
+
+      // Update assistant message with MCP sources
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMsg.id
+            ? { ...msg, mcpSources: response.mcpSources }
+            : msg
+        )
+      );
 
       // Simulate character-by-character streaming
       let currentText = '';
-      const chars = responseText.split('');
+      const chars = response.content.split('');
 
       for (let i = 0; i < chars.length; i++) {
         currentText += chars[i];
@@ -117,6 +126,22 @@ export default function ChatPage() {
     localStorage.removeItem('chat-messages');
   };
 
+  const handleFeedback = (messageId: string, mcpSource: string, feedback: 'thumbs-up' | 'thumbs-down') => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId
+          ? {
+              ...msg,
+              mcpFeedback: {
+                ...msg.mcpFeedback,
+                [mcpSource]: feedback,
+              },
+            }
+          : msg
+      )
+    );
+  };
+
   if (!mounted) {
     return null;
   }
@@ -150,7 +175,7 @@ export default function ChatPage() {
       </div>
 
       {/* Chat area */}
-      <ChatList messages={messages} />
+      <ChatList messages={messages} onFeedback={handleFeedback} />
 
       {/* Input area */}
       <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
