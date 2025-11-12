@@ -26,7 +26,7 @@ export function ChatList({ messages }: ChatListProps) {
 
   return (
     <ScrollArea ref={scrollRef} className="flex-1 w-full bg-black">
-      <div className="p-4 space-y-4 pb-96">
+      <div className="mx-auto max-w-4xl p-4 space-y-4 pb-96">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-center py-20">
             <div className="max-w-xs">
